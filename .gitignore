@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# X Monitor Bot specific
+logs/
+data/*.db
+data/*.db-journal
+*.sqlite
+*.sqlite3
