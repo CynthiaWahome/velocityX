@@ -51,7 +51,8 @@ class TestXMonitor:
         url = monitor.get_google_rss_url("sama")
         assert "news.google.com/rss/search" in url
         assert "sama" in url
-        assert "when:1h" in url
+        # Query should be URL-encoded (spaces become %20)
+        assert "when%3A1h" in url or "when:1h" in url
 
     def test_calculate_opportunity_score_fresh(self, monitor):
         """Test scoring for very fresh tweets."""
@@ -98,7 +99,7 @@ class TestXMonitor:
         assert "85/100" in message
         assert "~10 minutes" in message
         assert "https://twitter.com/sama/status/123" in message
-        assert "🚨" in message  # High score emoji
+        assert "🔥🔥🔥" in message  # Critical score emoji (>=80)
 
     def test_format_alert_message_critical_score(self, monitor):
         """Test alert message formatting for critical score."""
