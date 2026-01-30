@@ -7,8 +7,8 @@ from unittest.mock import patch
 
 import pytest
 
-from src.config import Config
-from src.constants import DEFAULT_ACCOUNT_CATEGORIES
+from x_monitor_bot.config import Config
+from x_monitor_bot.constants import DEFAULT_ACCOUNT_CATEGORIES
 
 
 class TestConfig:

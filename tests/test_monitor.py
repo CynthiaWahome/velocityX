@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from src.monitor import XMonitor
+from x_monitor_bot.monitor import XMonitor
 
 
 class TestXMonitor:
@@ -15,7 +15,7 @@ class TestXMonitor:
     @pytest.fixture
     def mock_config(self):
         """Mock configuration."""
-        with patch("src.monitor.config") as mock_cfg:
+        with patch("x_monitor_bot.monitor.config") as mock_cfg:
             mock_cfg.telegram_bot_token = "test_token"
             mock_cfg.telegram_chat_id = "123456"
             mock_cfg.monitored_accounts = ["sama", "karpathy"]
@@ -28,7 +28,7 @@ class TestXMonitor:
     @pytest.fixture
     def mock_db(self):
         """Mock database."""
-        with patch("src.monitor.SeenTweetsDB") as mock_db_class:
+        with patch("x_monitor_bot.monitor.SeenTweetsDB") as mock_db_class:
             mock_db = Mock()
             mock_db.is_seen.return_value = False
             mock_db.mark_seen.return_value = None
@@ -39,7 +39,8 @@ class TestXMonitor:
     @pytest.fixture
     def monitor(self, mock_config, mock_db):
         """Create monitor instance with mocked dependencies."""
-        return XMonitor()
+        with patch("x_monitor_bot.monitor.XMonitor.send_telegram_alert"):
+            return XMonitor()
 
     def test_monitor_initialization(self, monitor):
         """Test that monitor initializes correctly."""
@@ -131,15 +132,19 @@ class TestXMonitor:
         assert "..." in message
         assert len(message) < len(long_title) + 500
 
-    @patch("src.monitor.feedparser")
-    def test_check_account_no_tweets(self, mock_feedparser, monitor, mock_db):
+    @patch("requests.Session.get")
+    @patch("x_monitor_bot.monitor.feedparser")
+    def test_check_account_no_tweets(
+        self, mock_get, mock_feedparser, monitor, mock_db
+    ):
         """Test checking account with no recent tweets."""
+        mock_get.return_value = Mock(status_code=200, content=b"")
         mock_feedparser.parse.return_value = Mock(entries=[])
 
         result = monitor.check_account("sama")
         assert result is None
 
-    @patch("src.monitor.feedparser")
+    @patch("x_monitor_bot.monitor.feedparser")
     def test_check_account_already_seen(self, mock_feedparser, monitor, mock_db):
         """Test checking account with already seen tweet."""
         mock_entry = {
@@ -148,14 +153,18 @@ class TestXMonitor:
             "published": "2024-01-01",
         }
         mock_feedparser.parse.return_value = Mock(entries=[mock_entry])
-        mock_db.is_seen.return_value = True
+        mock_db.is_seen.return_value = True # Explicitly set for this test
 
         result = monitor.check_account("sama")
         assert result is None
 
-    @patch("src.monitor.feedparser")
-    def test_check_account_new_tweet(self, mock_feedparser, monitor, mock_db):
+    @patch("x_monitor_bot.monitor.feedparser")
+    @patch("requests.Session.get") # Patch requests.Session.get
+    def test_check_account_new_tweet(self, mock_get, mock_feedparser, monitor, mock_db):
         """Test checking account with new tweet."""
+        # Configure mock_get for successful response
+        mock_get.return_value = Mock(status_code=200, content=b"mock_rss_content")
+
         mock_entry = {
             "title": "New test tweet",
             "link": "https://twitter.com/sama/status/789",
@@ -173,7 +182,7 @@ class TestXMonitor:
         assert result["opportunity_score"] > 0
         mock_db.mark_seen.assert_called_once()
 
-    @patch("src.monitor.requests.Session.post")
+    @patch("x_monitor_bot.monitor.requests.Session.post")
     def test_send_telegram_alert_success(self, mock_post, monitor):
         """Test successful Telegram alert."""
         mock_response = Mock()
@@ -184,7 +193,7 @@ class TestXMonitor:
         assert result is True
         mock_post.assert_called_once()
 
-    @patch("src.monitor.requests.Session.post")
+    @patch("x_monitor_bot.monitor.requests.Session.post")
     def test_send_telegram_alert_failure(self, mock_post, monitor):
         """Test failed Telegram alert."""
         mock_response = Mock()
@@ -195,7 +204,7 @@ class TestXMonitor:
         result = monitor.send_telegram_alert("Test message")
         assert result is False
 
-    @patch("src.monitor.requests.Session.post")
+    @patch("x_monitor_bot.monitor.requests.Session.post")
     def test_send_telegram_alert_exception(self, mock_post, monitor):
         """Test Telegram alert with exception."""
         mock_post.side_effect = Exception("Network error")

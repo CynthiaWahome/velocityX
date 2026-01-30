@@ -68,8 +68,8 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=src --cov-report=term-missing"
+addopts = "-v --cov=x_monitor_bot --cov-report=term-missing"
 
 [tool.hatch.build.targets.wheel]
-force-include = { "src" = "x_monitor_bot" }
+force-include = { "x_monitor_bot" = "x_monitor_bot" }
 

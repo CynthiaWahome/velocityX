@@ -12,6 +12,8 @@ public Google News RSS feeds. Your X account cannot be detected or banned.
 import hashlib
 import time
 from datetime import datetime
+import urllib.parse
+from io import BytesIO
 
 import feedparser
 import requests
@@ -205,6 +207,10 @@ class XMonitor:
             logger.debug(f"Fetching RSS for @{username}...")
             feed = self.fetch_rss_feed(rss_url)
 
+            if feed is None:
+                logger.debug(f"Failed to fetch RSS feed for @{username}")
+                return None
+
             if not feed.entries:
                 logger.debug(f"No recent tweets from @{username}")
                 return None
@@ -360,8 +366,8 @@ Ready to catch opportunities! 🎯"""
                         else:
                             logger.debug(f"   Below threshold: @{username}")
 
-                    # Rate limiting - 2 seconds between account checks to prevent 503 errors
-                    time.sleep(2)
+                    # Rate limiting - ensure a minimum 2-second delay
+                    time.sleep(max(2, config.delay_between_accounts))
 
                 # Cycle summary
                 elapsed = time.time() - start_time

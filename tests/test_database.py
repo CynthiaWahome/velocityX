@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from src.database import SeenTweetsDB
+from x_monitor_bot.database import SeenTweetsDB
 
 
 class TestSeenTweetsDB:
