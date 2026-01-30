@@ -6,6 +6,7 @@ import sys
 from unittest.mock import Mock, patch
 
 import pytest
+import os
 
 import main
 
@@ -174,10 +175,13 @@ class TestCLI:
         mock_run_continuous.assert_called_once()
 
     @patch("main.config")
-    def test_main_missing_config(self, mock_config):
+    def test_main_missing_config(self, mock_main_config):
         """Test main function with missing configuration."""
-        mock_config.telegram_bot_token = property(
-            lambda self: (_ for _ in ()).throw(ValueError("Missing token"))
+        type(mock_main_config).telegram_bot_token = property(
+            lambda self: (_ for _ in ()).throw(ValueError("Missing Telegram Bot Token"))
+        )
+        type(mock_main_config).telegram_chat_id = property(
+            lambda self: (_ for _ in ()).throw(ValueError("Missing Telegram Chat ID"))
         )
 
         with patch.object(sys, "argv", ["main.py"]):

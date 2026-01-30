@@ -12,6 +12,8 @@ public Google News RSS feeds. Your X account cannot be detected or banned.
 import hashlib
 import time
 from datetime import datetime
+import urllib.parse
+from io import BytesIO
 
 import feedparser
 import requests
@@ -28,10 +30,20 @@ class XMonitor:
     def __init__(self):
         """Initialize the monitor with database and HTTP session."""
         self.db = SeenTweetsDB()
+        
+        # Create session with proper headers to avoid 503 errors
         self.session = requests.Session()
         self.session.headers.update({
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
         })
+        
+        # Also configure feedparser's User-Agent as backup
+        feedparser.USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
 
         logger.info("X Monitor Bot initialized")
         logger.info(f"Monitoring {len(config.monitored_accounts)} accounts")
@@ -81,10 +93,59 @@ class XMonitor:
         Returns:
             Google News RSS feed URL
         """
+        import urllib.parse
+
         # Search both twitter.com and x.com domains
         # "when:1h" limits to last hour
         query = f"site:twitter.com/{username} OR site:x.com/{username} when:1h"
-        return f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
+        encoded_query = urllib.parse.quote(query)
+        return f"https://news.google.com/rss/search?q={encoded_query}&hl=en-US&gl=US&ceid=US:en"
+
+    def fetch_rss_feed(self, url: str, retries: int = 3):
+        """
+        Fetch RSS feed with proper error handling and retries.
+
+        Args:
+            url: RSS feed URL
+            retries: Number of retry attempts
+
+        Returns:
+            Parsed feed or None on error
+        """
+        from io import BytesIO
+
+        for attempt in range(retries):
+            try:
+                # Use requests with proper headers
+                response = self.session.get(url, timeout=10)
+
+                if response.status_code == 200:
+                    # Parse the RSS content
+                    feed = feedparser.parse(BytesIO(response.content))
+                    return feed
+
+                elif response.status_code == 503:
+                    wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                    logger.warning(f"503 error on attempt {attempt + 1}/{retries}, waiting {wait_time}s...")
+                    time.sleep(wait_time)
+                    continue
+
+                else:
+                    logger.error(f"HTTP {response.status_code} error fetching RSS")
+                    return None
+
+            except requests.exceptions.Timeout:
+                wait_time = 2 ** attempt
+                logger.warning(f"Timeout on attempt {attempt + 1}/{retries}, waiting {wait_time}s...")
+                time.sleep(wait_time)
+                continue
+
+            except Exception as e:
+                logger.error(f"Error fetching RSS: {e}")
+                return None
+
+        logger.error(f"Failed to fetch RSS after {retries} attempts")
+        return None
 
     def calculate_opportunity_score(self, age_minutes: int) -> int:
         """
@@ -123,7 +184,10 @@ class XMonitor:
         Returns:
             MD5 hash of link and title
         """
-        content = f"{entry.link}{entry.title}"
+        # Support both dict and feedparser entry objects
+        link = entry.get("link") if isinstance(entry, dict) else entry.link
+        title = entry.get("title") if isinstance(entry, dict) else entry.title
+        content = f"{link}{title}"
         return hashlib.md5(content.encode()).hexdigest()
 
     def check_account(self, username: str) -> dict | None:
@@ -139,7 +203,13 @@ class XMonitor:
         rss_url = self.get_google_rss_url(username)
 
         try:
-            feed = feedparser.parse(rss_url)
+            # Fetch RSS feed with proper headers and retry logic
+            logger.debug(f"Fetching RSS for @{username}...")
+            feed = self.fetch_rss_feed(rss_url)
+
+            if feed is None:
+                logger.debug(f"Failed to fetch RSS feed for @{username}")
+                return None
 
             if not feed.entries:
                 logger.debug(f"No recent tweets from @{username}")
@@ -147,6 +217,15 @@ class XMonitor:
 
             # Get latest tweet
             latest = feed.entries[0]
+            
+            # Support both dict and feedparser entry objects
+            link = latest.get("link") if isinstance(latest, dict) else getattr(latest, "link", None)
+            title = latest.get("title") if isinstance(latest, dict) else getattr(latest, "title", None)
+            
+            if not link or not title:
+                logger.debug(f"@{username}: Missing link or title in RSS entry")
+                return None
+            
             tweet_id = self.generate_tweet_id(latest)
 
             # Skip if already seen
@@ -166,13 +245,15 @@ class XMonitor:
 
             logger.info(f"@{username}: New tweet detected (score: {opportunity_score})")
 
+            published = latest.get("published") if isinstance(latest, dict) else getattr(latest, "published", "Unknown")
+
             return {
                 "username": username,
-                "title": latest.title,
-                "link": latest.link,
+                "title": title,
+                "link": link,
                 "age_minutes": estimated_age,
                 "opportunity_score": opportunity_score,
-                "published": latest.get("published", "Unknown"),
+                "published": published,
             }
 
         except Exception as e:
@@ -193,11 +274,11 @@ class XMonitor:
 
         # Choose emoji based on score
         if score >= 80:
-            emoji = ALERT_EMOJIS["critical"]
+            emoji = ALERT_EMOJIS["critical"]  # 🔥🔥🔥
         elif score >= 50:
-            emoji = ALERT_EMOJIS["high"]
+            emoji = ALERT_EMOJIS["high"]  # 🚨
         else:
-            emoji = ALERT_EMOJIS["medium"]
+            emoji = ALERT_EMOJIS["medium"]  # 📢
 
         # Truncate title if too long
         title = tweet["title"]
@@ -285,8 +366,8 @@ Ready to catch opportunities! 🎯"""
                         else:
                             logger.debug(f"   Below threshold: @{username}")
 
-                    # Rate limiting - delay between account checks
-                    time.sleep(config.delay_between_accounts)
+                    # Rate limiting - ensure a minimum 2-second delay
+                    time.sleep(max(2, config.delay_between_accounts))
 
                 # Cycle summary
                 elapsed = time.time() - start_time
