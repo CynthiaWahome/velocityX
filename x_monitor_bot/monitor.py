@@ -22,6 +22,7 @@ from loguru import logger
 from .config import config
 from .constants import ALERT_EMOJIS
 from .database import SeenTweetsDB
+from .ai_replies import get_reply_suggestions
 
 
 class XMonitor:
@@ -262,7 +263,7 @@ class XMonitor:
 
     def format_alert_message(self, tweet: dict) -> str:
         """
-        Format pretty Telegram alert.
+        Format pretty Telegram alert with AI reply suggestions.
 
         Args:
             tweet: Tweet data dictionary
@@ -285,23 +286,54 @@ class XMonitor:
         if len(title) > 200:
             title = title[:200] + "..."
 
+        # Construct profile URL (more reliable than Google News redirect)
+        profile_url = f"https://twitter.com/{tweet['username']}"
+
         message = f"""{emoji} *NEW OPPORTUNITY*
 
 *Account:* @{tweet['username']}
 *Score:* {score}/100
 *Age:* ~{tweet['age_minutes']} minutes
 
-*Tweet:*
+📝 *Tweet:*
 {title}
 
-*Link:* {tweet['link']}
+🔗 *Profile:* {profile_url}
+_(Check recent tweets)_
+🔗 *Tweet Link:* {tweet['link']}
 
 ⏰ *Reply NOW for maximum visibility!*
-
-_Why this matters:_
+"""
+        
+        # Add AI reply suggestions if enabled
+        if config.enable_ai_replies and config.groq_api_key:
+            try:
+                replies = get_reply_suggestions(title, tweet['username'], 5)
+                if replies:
+                    message += "\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
+                    message += "💡 *REPLY SUGGESTIONS:*\n\n"
+                    for i, reply in enumerate(replies, 1):
+                        message += f"*{i}.* {reply}\n\n"
+                    message += "_Pick one, customize, post!_ 🚀"
+                else:
+                    logger.warning("AI replies enabled but no suggestions were returned; falling back to static tips.")
+                    message += """
+_Why reply now:_
 • Replies are 13.5x more valuable than likes
-• If author replies back = 75x multiplier
-• First 15 minutes are critical for distribution
+• Author reply back = 75x multiplier
+• First 15 min are critical for distribution
+"""
+            except Exception as e:
+                logger.warning(f"Failed to generate AI replies: {e}")
+                # Fall back to static tips
+                message += "\n_AI suggestions unavailable_"
+        else:
+            # Static tips if AI not enabled
+            message += """
+_Why reply now:_
+• Replies are 13.5x more valuable than likes
+• Author reply back = 75x multiplier
+• First 15 min are critical for distribution
 """
 
         return message
