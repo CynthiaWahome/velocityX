@@ -5,6 +5,7 @@ Follows X algorithm insights for maximum engagement.
 
 import os
 from loguru import logger
+from .config import config
 
 try:
     from groq import Groq
@@ -88,7 +89,7 @@ Output ONLY the {num_suggestions} replies, numbered. No explanations:
                         "content": prompt
                     }
                 ],
-                model="llama-3.1-70b-versatile",
+                model=config.groq_model_name,
                 temperature=0.8,  # Creative but coherent
                 max_tokens=400,
             )

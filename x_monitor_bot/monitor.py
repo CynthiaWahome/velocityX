@@ -300,6 +300,7 @@ class XMonitor:
 
 🔗 *Profile:* {profile_url}
 _(Check recent tweets)_
+🔗 *Tweet Link:* {tweet['link']}
 
 ⏰ *Reply NOW for maximum visibility!*
 """
@@ -314,6 +315,14 @@ _(Check recent tweets)_
                     for i, reply in enumerate(replies, 1):
                         message += f"*{i}.* {reply}\n\n"
                     message += "_Pick one, customize, post!_ 🚀"
+                else:
+                    logger.warning("AI replies enabled but no suggestions were returned; falling back to static tips.")
+                    message += """
+_Why reply now:_
+• Replies are 13.5x more valuable than likes
+• Author reply back = 75x multiplier
+• First 15 min are critical for distribution
+"""
             except Exception as e:
                 logger.warning(f"Failed to generate AI replies: {e}")
                 # Fall back to static tips

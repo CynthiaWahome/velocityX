@@ -101,8 +101,17 @@ class Config:
 
     @property
     def enable_ai_replies(self) -> bool:
-        """Check if AI reply suggestions are enabled (default: True if key set)."""
+        """
+        Check if AI reply suggestions are enabled.
+        Controlled by the ENABLE_AI_REPLIES environment variable, which
+        defaults to "true" (enabled) if not explicitly set.
+        """
         return os.getenv("ENABLE_AI_REPLIES", "true").lower() == "true"
+
+    @property
+    def groq_model_name(self) -> str:
+        """Get Groq model name for AI reply generation."""
+        return os.getenv("GROQ_MODEL_NAME", "llama-3.3-70b-versatile")
 
     @property
     def delay_between_accounts(self) -> float:

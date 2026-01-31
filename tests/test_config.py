@@ -181,3 +181,51 @@ class TestConfig:
 
             # Should use default accounts
             assert len(accounts) > 0
+
+    def test_default_groq_api_key(self):
+        """Test that groq_api_key defaults to an empty string."""
+        with patch.dict(
+            os.environ,
+            {"TELEGRAM_BOT_TOKEN": "test_token", "TELEGRAM_CHAT_ID": "123456"},
+            clear=True,
+        ):
+            config = Config()
+            assert config.groq_api_key == ""
+
+    def test_custom_groq_api_key(self):
+        """Test custom Groq API key from env."""
+        with patch.dict(
+            os.environ,
+            {
+                "TELEGRAM_BOT_TOKEN": "test_token",
+                "TELEGRAM_CHAT_ID": "123456",
+                "GROQ_API_KEY": "my-secret-key",
+            },
+            clear=True,
+        ):
+            config = Config()
+            assert config.groq_api_key == "my-secret-key"
+
+    def test_default_enable_ai_replies(self):
+        """Test that enable_ai_replies defaults to True."""
+        with patch.dict(
+            os.environ,
+            {"TELEGRAM_BOT_TOKEN": "test_token", "TELEGRAM_CHAT_ID": "123456"},
+            clear=True,
+        ):
+            config = Config()
+            assert config.enable_ai_replies is True
+
+    def test_disable_ai_replies(self):
+        """Test disabling AI replies from env."""
+        with patch.dict(
+            os.environ,
+            {
+                "TELEGRAM_BOT_TOKEN": "test_token",
+                "TELEGRAM_CHAT_ID": "123456",
+                "ENABLE_AI_REPLIES": "false",
+            },
+            clear=True,
+        ):
+            config = Config()
+            assert config.enable_ai_replies is False

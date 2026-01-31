@@ -100,6 +100,7 @@ class TestXMonitor:
         assert "85/100" in message
         assert "~10 minutes" in message
         assert "https://twitter.com/sama/status/123" in message
+        assert "https://twitter.com/sama" in message
         assert "🔥🔥🔥" in message  # Critical score emoji (>=80)
 
     def test_format_alert_message_critical_score(self, monitor):
@@ -116,7 +117,8 @@ class TestXMonitor:
         message = monitor.format_alert_message(tweet)
         assert "🔥🔥🔥" in message  # Critical emoji
 
-    def test_format_alert_message_truncates_long_title(self, monitor):
+    @patch("x_monitor_bot.monitor.get_reply_suggestions", return_value=[])
+    def test_format_alert_message_truncates_long_title(self, mock_get_reply_suggestions, monitor):
         """Test that long titles are truncated."""
         long_title = "A" * 250
         tweet = {
