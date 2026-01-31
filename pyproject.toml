@@ -23,6 +23,7 @@ dependencies = [
     "requests>=2.31.0",
     "python-dotenv>=1.0.1",
     "loguru>=0.7.2",
+    "groq>=0.1.0",
 ]
 
 [project.optional-dependencies]

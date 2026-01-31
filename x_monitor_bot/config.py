@@ -93,6 +93,17 @@ class Config:
         """Get maximum tweet age in minutes for alerts (default: 15)."""
         return int(os.getenv("MAX_TWEET_AGE_MINUTES", "15"))
 
+    # AI Reply Configuration
+    @property
+    def groq_api_key(self) -> str:
+        """Get Groq API key for AI reply generation."""
+        return os.getenv("GROQ_API_KEY", "")
+
+    @property
+    def enable_ai_replies(self) -> bool:
+        """Check if AI reply suggestions are enabled (default: True if key set)."""
+        return os.getenv("ENABLE_AI_REPLIES", "true").lower() == "true"
+
     @property
     def delay_between_accounts(self) -> float:
         """Get delay between account checks in seconds (default: 1.0)."""
