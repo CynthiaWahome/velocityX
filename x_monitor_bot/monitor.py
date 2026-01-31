@@ -97,8 +97,8 @@ class XMonitor:
         import urllib.parse
 
         # Search both twitter.com and x.com domains
-        # "when:1h" limits to last hour
-        query = f"site:twitter.com/{username} OR site:x.com/{username} when:1h"
+        # "when:12h" - Google News indexes tweets slowly, need wider window
+        query = f"site:twitter.com/{username} OR site:x.com/{username} when:12h"
         encoded_query = urllib.parse.quote(query)
         return f"https://news.google.com/rss/search?q={encoded_query}&hl=en-US&gl=US&ceid=US:en"
 
