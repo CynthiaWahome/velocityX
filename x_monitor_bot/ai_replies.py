@@ -89,20 +89,64 @@ class AIReplyGenerator:
             
             response = completion.choices[0].message.content
             
-            # Parse numbered replies
+            # Parse replies - handle multiple formats:
+            # - "1. reply text"
+            # - "1) reply text"
+            # - "Option 1: reply text" 
+            # - "**Option 1:** reply text" (markdown)
+            # - "**Option 1:**\nreply text" (multi-line)
             replies = []
-            for line in response.strip().split('\n'):
-                line = line.strip()
-                if line and len(line) > 2 and line[0].isdigit():
-                    # Remove "1. " or "1) " prefix
+            lines = response.strip().split('\n')
+            
+            i = 0
+            while i < len(lines):
+                line = lines[i].strip()
+                i += 1
+                
+                if not line:
+                    continue
+                
+                reply = None
+                
+                # Check if this is a header line (contains "Option" or is just a number)
+                is_header = False
+                
+                # Format: "1. reply" or "1) reply"
+                if line[0].isdigit():
                     if '. ' in line:
                         reply = line.split('. ', 1)[-1].strip()
                     elif ') ' in line:
                         reply = line.split(') ', 1)[-1].strip()
-                    else:
-                        reply = line[2:].strip()
+                
+                # Format: "Option N:" or "**Option N:**" (may have reply on same line or next)
+                elif 'option' in line.lower():
+                    is_header = True
                     
-                    if reply:
+                    # If line ends with ** or **, it's a pure header - reply is on next line
+                    if line.endswith('**') or line.endswith('**:'):
+                        # Skip to next non-empty line for the actual reply
+                        while i < len(lines):
+                            next_line = lines[i].strip()
+                            if next_line and not next_line.startswith('**') and 'option' not in next_line.lower():
+                                reply = next_line
+                                i += 1
+                                break
+                            elif not next_line:
+                                i += 1
+                            else:
+                                break
+                    # Otherwise check if reply is on same line after ":"
+                    elif ': ' in line:
+                        after_colon = line.split(': ', 1)[-1].strip()
+                        # Remove markdown ** if present
+                        after_colon = after_colon.strip('*')
+                        if after_colon and len(after_colon) > 20:  # Real replies are longer
+                            reply = after_colon
+                
+                if reply:
+                    # Clean up markdown and quotes
+                    reply = reply.strip('*"\'')
+                    if reply and len(reply) > 10:
                         replies.append(reply)
             
             logger.debug(f"Generated {len(replies)} reply suggestions")
