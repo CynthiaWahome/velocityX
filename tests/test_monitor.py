@@ -23,6 +23,13 @@ class TestXMonitor:
             mock_cfg.min_opportunity_score = 30
             mock_cfg.max_tweet_age_minutes = 15
             mock_cfg.delay_between_accounts = 1.0
+            mock_cfg.request_jitter_seconds = 0  # No jitter in tests
+            mock_cfg.request_timeout_seconds = 10
+            mock_cfg.rss_max_retries = 3
+            mock_cfg.rss_time_window = "12h"
+            mock_cfg.http_proxy = ""
+            mock_cfg.db_cleanup_days = 7
+            mock_cfg.default_tweet_age_minutes = 10
             yield mock_cfg
 
     @pytest.fixture

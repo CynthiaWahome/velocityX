@@ -5,6 +5,7 @@ Loads settings from .env file and provides validation.
 Sets up professional logging with loguru.
 """
 
+import json
 import os
 from pathlib import Path
 from typing import List
@@ -12,6 +13,7 @@ from typing import List
 from dotenv import load_dotenv
 from loguru import logger
 
+# Fallback to constants if accounts.json not found
 from .constants import DEFAULT_ACCOUNT_CATEGORIES
 
 # Load environment variables from .env file
@@ -144,6 +146,16 @@ class Config:
         return os.getenv("HTTP_PROXY", "")
 
     @property
+    def db_cleanup_days(self) -> int:
+        """Get number of days to keep tweets in database (default: 7)."""
+        return int(os.getenv("DB_CLEANUP_DAYS", "7"))
+
+    @property
+    def default_tweet_age_minutes(self) -> int:
+        """Get default tweet age when RSS doesn't provide timestamp (default: 10)."""
+        return int(os.getenv("DEFAULT_TWEET_AGE_MINUTES", "10"))
+
+    @property
     def monitored_accounts(self) -> List[str]:
         """
         Get list of accounts to monitor.
@@ -160,7 +172,23 @@ class Config:
         return self._get_default_accounts()
 
     def _get_default_accounts(self) -> List[str]:
-        """Get all accounts from curated category lists."""
+        """Get all accounts from accounts.json (or fallback to constants.py)."""
+        # Try to load from accounts.json first
+        json_path = Path(__file__).parent / "accounts.json"
+        
+        if json_path.exists():
+            try:
+                with open(json_path) as f:
+                    categories = json.load(f)
+                all_accounts = []
+                for category_accounts in categories.values():
+                    all_accounts.extend(category_accounts)
+                logger.debug(f"Loaded {len(all_accounts)} accounts from accounts.json")
+                return all_accounts
+            except Exception as e:
+                logger.warning(f"Failed to load accounts.json: {e}, using fallback")
+        
+        # Fallback to hardcoded constants
         all_accounts = []
         for category_accounts in DEFAULT_ACCOUNT_CATEGORIES.values():
             all_accounts.extend(category_accounts)

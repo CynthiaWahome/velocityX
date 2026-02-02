@@ -1,0 +1,62 @@
+{
+  "tech_visionaries": [
+    "sama",
+    "karpathy",
+    "ylecun",
+    "gdb",
+    "JeffDean",
+    "fchollet",
+    "goodfellow_i",
+    "timnitGebru",
+    "hardmaru",
+    "pooleparty"
+  ],
+  "python_django": [
+    "jacobian",
+    "adrianholovaty",
+    "freakboy3742",
+    "nnja",
+    "mkennedy",
+    "dbader_org",
+    "raymondh",
+    "nedbat",
+    "willmcgugan",
+    "treyhunner"
+  ],
+  "backend_devops": [
+    "kelseyhightower",
+    "jessfraz",
+    "b0rk",
+    "mipsytipsy",
+    "bridgetkromhout",
+    "mattstratton",
+    "littleidea",
+    "DEVOPS_BORAT",
+    "swardley",
+    "copyconstruct"
+  ],
+  "tech_memes": [
+    "programming_wisdom",
+    "CommitStrip",
+    "ThePracticalDev",
+    "nixcraft",
+    "devrant",
+    "PR0GRAMMERHUM0R",
+    "iamdeveloper",
+    "ThePrimeagen",
+    "t3dotgg",
+    "levelsio"
+  ],
+  "security": [
+    "SwiftOnSecurity",
+    "thegrugq",
+    "schneierblog",
+    "troyhunt",
+    "hacks4pancakes",
+    "malwareunicorn",
+    "todb",
+    "taviso",
+    "TinkerSec",
+    "0xInfection"
+  ]
+}
