@@ -275,8 +275,8 @@ class XMonitor:
             self.db.mark_seen(tweet_id)
 
             # Estimate age (Google News has 5-15 min indexing delay)
-            # We estimate 10 minutes as middle ground
-            estimated_age = 10
+            # Configurable via DEFAULT_TWEET_AGE_MINUTES in .env
+            estimated_age = config.default_tweet_age_minutes
 
             # Calculate opportunity score
             opportunity_score = self.calculate_opportunity_score(estimated_age)
@@ -443,7 +443,7 @@ Ready to catch opportunities! 🎯"""
                 logger.info(f"💤 Sleeping for {config.check_interval_seconds} seconds...")
 
                 # Cleanup old tweets from database (every cycle)
-                cleaned = self.db.cleanup_old(days=7)
+                cleaned = self.db.cleanup_old(days=config.db_cleanup_days)
                 if cleaned > 0:
                     logger.debug(f"🗑️  Cleaned up {cleaned} old tweets from database")
 
