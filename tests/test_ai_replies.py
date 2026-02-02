@@ -30,14 +30,15 @@ class TestAIReplyGenerator(unittest.TestCase):
     def test_generate_replies_success(self, mock_groq):
         """Test successful generation of replies."""
         mock_completion = MagicMock()
-        mock_completion.choices[0].message.content = "1. Reply 1\n2. Reply 2\n3. Reply 3"
+        # Replies need to be > 10 chars to pass parser minimum length check
+        mock_completion.choices[0].message.content = "1. This is a witty reply that would work great\n2. Another clever response to engage the author\n3. A third punchy comeback for variety"
         mock_groq.return_value.chat.completions.create.return_value = mock_completion
 
         replies = get_reply_suggestions("test tweet", "test_author", num=3)
         self.assertEqual(len(replies), 3)
-        self.assertEqual(replies[0], "Reply 1")
-        self.assertEqual(replies[1], "Reply 2")
-        self.assertEqual(replies[2], "Reply 3")
+        self.assertEqual(replies[0], "This is a witty reply that would work great")
+        self.assertEqual(replies[1], "Another clever response to engage the author")
+        self.assertEqual(replies[2], "A third punchy comeback for variety")
 
     @patch('x_monitor_bot.ai_replies._generator', new=None)
     @patch.dict(os.environ, {"GROQ_API_KEY": "fake_key"})

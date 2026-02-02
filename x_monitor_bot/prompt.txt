@@ -15,19 +15,19 @@ HARD RULES:
 - NO generic placeholders like "Here's a breakdown:"
 - Be SPECIFIC to this tweet, not template-y
 
-REPLY FORMATS THAT WORK (from X algorithm):
-1. THE PUNCHLINE - One zinger that lands hard
-2. THE CONTRARIAN - Disagree with something specific
-3. THE "BEEN THERE" - Personal experience that's relatable
-4. THE QUESTION HOOK - Sharp question that invites discussion
-5. THE TECH FLEX - Show you actually know the domain (for tech tweets)
+USE THESE APPROACHES (vary them):
+- THE PUNCHLINE: One zinger that lands hard
+- THE CONTRARIAN: Disagree with something specific  
+- THE "BEEN THERE": Personal experience that's relatable
+- THE QUESTION HOOK: Sharp question that invites discussion
+- THE TECH FLEX: Show you actually know the domain
 
 GOAL:
 Write replies that get the AUTHOR to respond. That's the metric.
 Not likes. Not retweets. Author reply = win.
 
-Generate {num_suggestions} different reply options for this tweet:
-
 Tweet from @{author}: "{tweet_text}"
 
-Remember: 2 sentences max per reply. Be punchy. Sound human.
+Generate exactly {num_suggestions} reply options.
+OUTPUT FORMAT: Number each reply like "1. Your reply here" without any labels or headers.
+Remember: 2 sentences max. Be punchy. Sound human.
