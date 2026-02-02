@@ -273,7 +273,7 @@ class XMonitor:
         """
         score = tweet["opportunity_score"]
 
-        # Choose emoji based on score
+        # Choose emoji based on score (internal, not shown to user)
         if score >= 80:
             emoji = ALERT_EMOJIS["critical"]  # 🔥🔥🔥
         elif score >= 50:
@@ -289,19 +289,14 @@ class XMonitor:
         # Construct profile URL (more reliable than Google News redirect)
         profile_url = f"https://twitter.com/{tweet['username']}"
 
-        message = f"""{emoji} *NEW OPPORTUNITY*
+        # V2: Cleaner alert - removed misleading score & broken tweet link
+        message = f"""{emoji} *NEW TWEET ALERT*
 
-*Account:* @{tweet['username']}
-*Score:* {score}/100
-*Age:* ~{tweet['age_minutes']} minutes
+*@{tweet['username']}*
 
-📝 *Tweet:*
-{title}
+📝 {title}
 
-🔗 *Profile:* {profile_url}
-_(Check recent tweets)_
-🔗 *Tweet Link:* {tweet['link']}
-
+🔗 [Profile]({profile_url}) - check latest tweets
 ⏰ *Reply NOW for maximum visibility!*
 """
         
@@ -311,7 +306,7 @@ _(Check recent tweets)_
                 replies = get_reply_suggestions(title, tweet['username'], 5)
                 if replies:
                     message += "\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
-                    message += "💡 *REPLY SUGGESTIONS:*\n\n"
+                    message += "💡 *REPLY IDEAS:*\n\n"
                     for i, reply in enumerate(replies, 1):
                         message += f"*{i}.* {reply}\n\n"
                     message += "_Pick one, customize, post!_ 🚀"
@@ -321,7 +316,7 @@ _(Check recent tweets)_
 _Why reply now:_
 • Replies are 13.5x more valuable than likes
 • Author reply back = 75x multiplier
-• First 15 min are critical for distribution
+• First 15 min are critical
 """
             except Exception as e:
                 logger.warning(f"Failed to generate AI replies: {e}")
@@ -333,7 +328,7 @@ _Why reply now:_
 _Why reply now:_
 • Replies are 13.5x more valuable than likes
 • Author reply back = 75x multiplier
-• First 15 min are critical for distribution
+• First 15 min are critical
 """
 
         return message
