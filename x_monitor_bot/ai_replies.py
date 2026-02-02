@@ -4,6 +4,7 @@ Follows X algorithm insights for maximum engagement.
 """
 
 import os
+from pathlib import Path
 from loguru import logger
 from .config import config
 
@@ -13,6 +14,18 @@ try:
 except ImportError:
     GROQ_AVAILABLE = False
     logger.warning("Groq not installed. Run: uv add groq")
+
+
+def load_prompt_template() -> str:
+    """Load prompt from external file for easy customization."""
+    prompt_path = Path(__file__).parent / "prompt.txt"
+    if prompt_path.exists():
+        return prompt_path.read_text()
+    else:
+        logger.warning(f"prompt.txt not found at {prompt_path}, using default")
+        return """Generate {num_suggestions} witty reply suggestions for this tweet:
+Tweet from @{author}: "{tweet_text}"
+Be punchy, max 2 sentences each. Number them 1-{num_suggestions}."""
 
 
 class AIReplyGenerator:
@@ -30,6 +43,9 @@ class AIReplyGenerator:
         else:
             self.client = Groq(api_key=api_key)
             logger.info("AI Reply Generator initialized")
+        
+        # Load prompt template
+        self.prompt_template = load_prompt_template()
     
     def generate_replies(
         self,
@@ -42,47 +58,24 @@ class AIReplyGenerator:
         
         Based on twitter/the-algorithm insights:
         - Replies that spark discussion get distributed
-        - One clear idea, readable standalone
-        - No generic "this!" or "facts" replies
-        - Trigger replies, not just likes
+        - Goal: Get the AUTHOR to reply back
         """
         if not self.client:
             return []
         
-        prompt = f'''You are a Twitter engagement expert who understands the X algorithm.
-
-Tweet from @{author_username}: "{tweet_text}"
-
-Generate exactly {num_suggestions} DIFFERENT reply options. Each reply must:
-- Be MAX 2 sentences (short and punchy)
-- Be witty, clever, or add genuine value
-- Sound natural and conversational (not robotic)
-- Aim to get replies back (not just likes)
-- Be readable standalone (works even out of context)
-
-Match the tweet's tone:
-- Serious topic → Insightful, add value
-- Casual/fun topic → Witty, funny, conversational
-- Controversial → Reasonable contrarian or clarifying question
-
-Reply formats that travel well (from X algorithm):
-1. "The missing context" - Add a key detail they missed
-2. "The useful breakdown" - 2-3 quick bullet points
-3. "The contrarian" - Agree with part, disagree with core
-4. "The question hook" - Sharp question that invites discussion
-5. "The personal angle" - Your experience or unique take
-
-Output ONLY the {num_suggestions} replies, numbered. No explanations:
-1. [reply]
-2. [reply]
-...'''
+        # Format prompt with tweet details
+        prompt = self.prompt_template.format(
+            num_suggestions=num_suggestions,
+            author=author_username,
+            tweet_text=tweet_text
+        )
 
         try:
             completion = self.client.chat.completions.create(
                 messages=[
                     {
                         "role": "system",
-                        "content": "You write viral Twitter replies. Short, punchy, engagement-focused."
+                        "content": "You write viral Twitter replies. Short, punchy, get author replies."
                     },
                     {
                         "role": "user",
@@ -90,8 +83,8 @@ Output ONLY the {num_suggestions} replies, numbered. No explanations:
                     }
                 ],
                 model=config.groq_model_name,
-                temperature=0.8,  # Creative but coherent
-                max_tokens=400,
+                temperature=0.9,  # More creative for wit
+                max_tokens=500,
             )
             
             response = completion.choices[0].message.content

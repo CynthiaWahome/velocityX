@@ -97,10 +97,9 @@ class TestXMonitor:
 
         message = monitor.format_alert_message(tweet)
         assert "@sama" in message
-        assert "85/100" in message
-        assert "~10 minutes" in message
-        assert "https://twitter.com/sama/status/123" in message
-        assert "https://twitter.com/sama" in message
+        # V2: Score and age no longer shown (always 85, misleading)
+        assert "This is a test tweet" in message
+        assert "https://twitter.com/sama" in message  # Profile link
         assert "🔥🔥🔥" in message  # Critical score emoji (>=80)
 
     def test_format_alert_message_critical_score(self, monitor):
