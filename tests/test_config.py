@@ -103,7 +103,7 @@ class TestConfig:
             clear=True,
         ):
             config = Config()
-            assert config.delay_between_accounts == 1.0
+            assert config.delay_between_accounts == 8.0
 
     def test_custom_delay_between_accounts(self):
         """Test custom delay between accounts from env."""
