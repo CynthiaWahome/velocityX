@@ -10,6 +10,7 @@ public Google News RSS feeds. Your X account cannot be detected or banned.
 """
 
 import hashlib
+import random
 import time
 from datetime import datetime
 import urllib.parse
@@ -28,26 +29,53 @@ from .ai_replies import get_reply_suggestions
 class XMonitor:
     """Main monitoring class for X/Twitter accounts."""
 
+    # Pool of User-Agent strings to rotate through (helps avoid detection)
+    USER_AGENTS = [
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/120.0.2210.91',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+    ]
+
     def __init__(self):
         """Initialize the monitor with database and HTTP session."""
         self.db = SeenTweetsDB()
         
         # Create session with proper headers to avoid 503 errors
         self.session = requests.Session()
+        self._rotate_user_agent()  # Set initial random User-Agent
+        
+        # Configure proxy if provided (for bypassing IP blocks)
+        if config.http_proxy:
+            self.session.proxies = {
+                'http': config.http_proxy,
+                'https': config.http_proxy,
+            }
+            logger.info(f"Using proxy: {config.http_proxy.split('@')[-1]}")  # Log without credentials
+        
+        # Also configure feedparser's User-Agent as backup
+        feedparser.USER_AGENT = random.choice(self.USER_AGENTS)
+
+        logger.info("X Monitor Bot initialized")
+        logger.info(f"Monitoring {len(config.monitored_accounts)} accounts")
+
+    def _rotate_user_agent(self):
+        """Rotate to a new random User-Agent to avoid detection."""
+        ua = random.choice(self.USER_AGENTS)
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'User-Agent': ua,
             'Accept': 'application/rss+xml, application/xml, text/xml, */*',
             'Accept-Language': 'en-US,en;q=0.9',
             'Accept-Encoding': 'gzip, deflate, br',
             'DNT': '1',
             'Connection': 'keep-alive',
         })
-        
-        # Also configure feedparser's User-Agent as backup
-        feedparser.USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"
-
-        logger.info("X Monitor Bot initialized")
-        logger.info(f"Monitoring {len(config.monitored_accounts)} accounts")
 
     def send_telegram_alert(self, message: str) -> bool:
         """
@@ -97,28 +125,37 @@ class XMonitor:
         import urllib.parse
 
         # Search both twitter.com and x.com domains
-        # "when:12h" - Google News indexes tweets slowly, need wider window
-        query = f"site:twitter.com/{username} OR site:x.com/{username} when:12h"
+        # Time window is configurable via RSS_TIME_WINDOW env var
+        time_window = config.rss_time_window
+        query = f"site:twitter.com/{username} OR site:x.com/{username} when:{time_window}"
         encoded_query = urllib.parse.quote(query)
         return f"https://news.google.com/rss/search?q={encoded_query}&hl=en-US&gl=US&ceid=US:en"
 
-    def fetch_rss_feed(self, url: str, retries: int = 3):
+    def fetch_rss_feed(self, url: str, retries: int = None):
         """
         Fetch RSS feed with proper error handling and retries.
 
         Args:
             url: RSS feed URL
-            retries: Number of retry attempts
+            retries: Number of retry attempts (default: from config)
 
         Returns:
             Parsed feed or None on error
         """
         from io import BytesIO
 
+        if retries is None:
+            retries = config.rss_max_retries
+
+        timeout = config.request_timeout_seconds
+
         for attempt in range(retries):
             try:
+                # Rotate User-Agent on each attempt to avoid detection
+                self._rotate_user_agent()
+                
                 # Use requests with proper headers
-                response = self.session.get(url, timeout=10)
+                response = self.session.get(url, timeout=timeout)
 
                 if response.status_code == 200:
                     # Parse the RSS content
@@ -393,8 +430,11 @@ Ready to catch opportunities! 🎯"""
                         else:
                             logger.debug(f"   Below threshold: @{username}")
 
-                    # Rate limiting - ensure a minimum 2-second delay
-                    time.sleep(max(2, config.delay_between_accounts))
+                    # Rate limiting with jitter to avoid detection
+                    base_delay = max(2, config.delay_between_accounts)
+                    jitter = random.uniform(0, config.request_jitter_seconds)
+                    total_delay = base_delay + jitter
+                    time.sleep(total_delay)
 
                 # Cycle summary
                 elapsed = time.time() - start_time

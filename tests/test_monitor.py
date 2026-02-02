@@ -52,8 +52,9 @@ class TestXMonitor:
         url = monitor.get_google_rss_url("sama")
         assert "news.google.com/rss/search" in url
         assert "sama" in url
-        # Query should be URL-encoded (spaces become %20)
-        assert "when%3A12h" in url or "when:12h" in url
+        # Query should contain 'when:' with the configured time window (URL-encoded or not)
+        # Default is 12h but can be configured
+        assert "when%3A" in url or "when:" in url
 
     def test_calculate_opportunity_score_fresh(self, monitor):
         """Test scoring for very fresh tweets."""

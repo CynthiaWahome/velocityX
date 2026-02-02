@@ -115,8 +115,33 @@ class Config:
 
     @property
     def delay_between_accounts(self) -> float:
-        """Get delay between account checks in seconds (default: 1.0)."""
-        return float(os.getenv("DELAY_BETWEEN_ACCOUNTS", "1.0"))
+        """Get delay between account checks in seconds (default: 8.0)."""
+        return float(os.getenv("DELAY_BETWEEN_ACCOUNTS", "8.0"))
+
+    @property
+    def request_jitter_seconds(self) -> float:
+        """Get max random jitter added to each request delay (default: 3.0)."""
+        return float(os.getenv("REQUEST_JITTER_SECONDS", "3.0"))
+
+    @property
+    def request_timeout_seconds(self) -> int:
+        """Get request timeout in seconds (default: 15)."""
+        return int(os.getenv("REQUEST_TIMEOUT_SECONDS", "15"))
+
+    @property
+    def rss_max_retries(self) -> int:
+        """Get max retries for RSS fetch (default: 3)."""
+        return int(os.getenv("RSS_MAX_RETRIES", "3"))
+
+    @property
+    def rss_time_window(self) -> str:
+        """Get time window for Google News search (default: 12h)."""
+        return os.getenv("RSS_TIME_WINDOW", "12h")
+
+    @property
+    def http_proxy(self) -> str:
+        """Get HTTP proxy URL (optional, for bypassing IP blocks)."""
+        return os.getenv("HTTP_PROXY", "")
 
     @property
     def monitored_accounts(self) -> List[str]:
