@@ -1,4 +1,4 @@
-# VelocityX • Algorithmic Early Signal & Feed Injection Engine
+# VelocityX • Early Signal & Reply Intelligence Engine
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat&logo=python&logoColor=white)
 ![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)
@@ -8,20 +8,20 @@
 ![Telegram](https://img.shields.io/badge/Telegram-Dispatch%20Alerts-26A5E4.svg?logo=telegram&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-> **High-throughput ingestion pipeline and sub-850ms contextual reasoning engine designed to intercept early signal and exploit the feed injection window defined by the modern X recommendation architecture ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
+> **High-throughput ingestion pipeline and sub-850ms contextual reasoning engine engineered to detect early publications and assist human-in-the-loop engagement aligned with modern recommendation systems ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
 
 ---
 
 ## ⚡ Executive Summary & Engineering Rationale
 
-The 2026 release of X's recommendation engine ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)) represents a fundamental architectural departure from legacy social ranking systems:
+The 2026 release of X's recommendation engine ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)) represents a fundamental architectural shift from legacy social ranking heuristics:
 
-1. **62.9% Rust Core:** Completely rewritten in Rust and Python, discarding the legacy Scala codebase (`home-mixer`, `cr-mixer`) for a unified, high-performance inference pipeline shipping with pre-trained model artifacts.
-2. **End-to-End Sequence Learning:** Hand-engineered heuristic feature formulas have been eliminated. Relevance is learned dynamically from continuous user engagement sequences and deep interaction graphs.
-3. **Grok Content Understanding:** Active public release cadences (such as the May 2026 updates) integrated deep semantic content-understanding models directly into candidate generation and sequence blending.
-4. **The Author Reciprocation Signal:** In sequence-to-sequence ranking, an early reply that elicits a direct response from the original author acts as an immediate positive sequence modifier. This reciprocal interaction anchors the conversation in the candidate generation pool before timeline cascades lock in.
+1. **62.9% Rust Core:** Completely rewritten in Rust and Python, replacing the legacy Scala codebase with high-performance inference pipelines and pre-trained model artifacts.
+2. **Sequence-to-Sequence Learning:** Hand-engineered feature weights have been replaced by sequence models learning relevance directly from user engagement sequences.
+3. **Grok Content Understanding:** Modern releases integrate deep semantic content-understanding models directly into candidate generation.
+4. **The Author Reciprocation Factor:** In sequence engagement models, an early reply that triggers a direct response from the original author acts as an immediate positive signal, building conversational depth.
 
-**VelocityX** is an autonomous daemon built to capture this operational window. It tracks high-signal target accounts, intercepts new publications within seconds, scores engagement opportunity, synthesizes contextual replies via low-latency LLMs, and dispatches actionable alerts directly to Telegram before candidate generation pools freeze.
+**VelocityX** is an autonomous assistant built to support this human workflow. It tracks curated target accounts, detects new publications with zero-ban RSS proxies, evaluates early signal opportunity, synthesizes contextual replies via sub-850ms Groq LLaMA 3.3 70B inference, and pushes actionable drafts to Telegram for human review and manual posting.
 
 ---
 
@@ -126,26 +126,7 @@ uv sync
 
 # Configure runtime credentials
 cp .env.example .env
-```
-
-### Environment Configuration
-
-Configure `.env` with your API credentials:
-
-```env
-# Telegram Dispatch
-TELEGRAM_BOT_TOKEN=your_bot_token_here
-TELEGRAM_CHAT_ID=your_chat_id_here
-
-# Groq LPU Reasoning (Optional)
-GROQ_API_KEY=gsk_your_groq_api_key_here
-ENABLE_AI_REPLIES=true
-
-# Engine Tuning
-CHECK_INTERVAL_SECONDS=300
-MIN_OPPORTUNITY_SCORE=70
-MAX_TWEET_AGE_MINUTES=15
-DELAY_BETWEEN_ACCOUNTS=1.5
+# Edit .env with your Telegram bot credentials and optional Groq API key
 ```
 
 ---
@@ -219,6 +200,6 @@ sudo systemctl status velocityx
 
 ## 📄 License & Ethical Usage
 
-Distributed under the **MIT License**.
+Distributed under the [MIT License](LICENSE).
 
 > **Note on Platform Conduct:** VelocityX operates as a high-signal notification assistant. It does not automate spam, fake interactions, or unsolicited promotional campaigns. All replies are dispatched for human review and manual publication, adhering to community standards and meaningful technical discourse.
