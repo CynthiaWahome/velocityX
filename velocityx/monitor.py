@@ -12,70 +12,74 @@ public Google News RSS feeds. Your X account cannot be detected or banned.
 import hashlib
 import random
 import time
-from datetime import datetime
 import urllib.parse
+from datetime import datetime
 from io import BytesIO
 
 import feedparser
 import requests
 from loguru import logger
 
+from .ai_replies import get_reply_suggestions
 from .config import config
 from .constants import ALERT_EMOJIS
 from .database import SeenTweetsDB
-from .ai_replies import get_reply_suggestions
 
 
-class XMonitor:
-    """Main monitoring class for X/Twitter accounts."""
+class VelocityXEngine:
+    """Main monitoring and reply intelligence engine for X/Twitter accounts."""
 
     # Pool of User-Agent strings to rotate through (helps avoid detection)
     USER_AGENTS = [
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0',
-        'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/120.0.2210.91',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/120.0.2210.91",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
     ]
 
     def __init__(self):
         """Initialize the monitor with database and HTTP session."""
         self.db = SeenTweetsDB()
-        
+
         # Create session with proper headers to avoid 503 errors
         self.session = requests.Session()
         self._rotate_user_agent()  # Set initial random User-Agent
-        
+
         # Configure proxy if provided (for bypassing IP blocks)
         if config.http_proxy:
             self.session.proxies = {
-                'http': config.http_proxy,
-                'https': config.http_proxy,
+                "http": config.http_proxy,
+                "https": config.http_proxy,
             }
-            logger.info(f"Using proxy: {config.http_proxy.split('@')[-1]}")  # Log without credentials
-        
+            logger.info(
+                f"Using proxy: {config.http_proxy.split('@')[-1]}"
+            )  # Log without credentials
+
         # Also configure feedparser's User-Agent as backup
         feedparser.USER_AGENT = random.choice(self.USER_AGENTS)
 
-        logger.info("X Monitor Bot initialized")
+        logger.info("VelocityX Engine initialized")
         logger.info(f"Monitoring {len(config.monitored_accounts)} accounts")
 
     def _rotate_user_agent(self):
         """Rotate to a new random User-Agent to avoid detection."""
         ua = random.choice(self.USER_AGENTS)
-        self.session.headers.update({
-            'User-Agent': ua,
-            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": ua,
+                "Accept": "application/rss+xml, application/xml, text/xml, */*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Accept-Encoding": "gzip, deflate, br",
+                "DNT": "1",
+                "Connection": "keep-alive",
+            }
+        )
 
     def send_telegram_alert(self, message: str) -> bool:
         """
@@ -122,7 +126,6 @@ class XMonitor:
         Returns:
             Google News RSS feed URL
         """
-        import urllib.parse
 
         # Search both twitter.com and x.com domains
         # Time window is configurable via RSS_TIME_WINDOW env var
@@ -142,7 +145,6 @@ class XMonitor:
         Returns:
             Parsed feed or None on error
         """
-        from io import BytesIO
 
         if retries is None:
             retries = config.rss_max_retries
@@ -153,7 +155,7 @@ class XMonitor:
             try:
                 # Rotate User-Agent on each attempt to avoid detection
                 self._rotate_user_agent()
-                
+
                 # Use requests with proper headers
                 response = self.session.get(url, timeout=timeout)
 
@@ -163,8 +165,10 @@ class XMonitor:
                     return feed
 
                 elif response.status_code == 503:
-                    wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
-                    logger.warning(f"503 error on attempt {attempt + 1}/{retries}, waiting {wait_time}s...")
+                    wait_time = 2**attempt  # Exponential backoff: 1s, 2s, 4s
+                    logger.warning(
+                        f"503 error on attempt {attempt + 1}/{retries}, waiting {wait_time}s..."
+                    )
                     time.sleep(wait_time)
                     continue
 
@@ -173,8 +177,10 @@ class XMonitor:
                     return None
 
             except requests.exceptions.Timeout:
-                wait_time = 2 ** attempt
-                logger.warning(f"Timeout on attempt {attempt + 1}/{retries}, waiting {wait_time}s...")
+                wait_time = 2**attempt
+                logger.warning(
+                    f"Timeout on attempt {attempt + 1}/{retries}, waiting {wait_time}s..."
+                )
                 time.sleep(wait_time)
                 continue
 
@@ -255,15 +261,17 @@ class XMonitor:
 
             # Get latest tweet
             latest = feed.entries[0]
-            
+
             # Support both dict and feedparser entry objects
             link = latest.get("link") if isinstance(latest, dict) else getattr(latest, "link", None)
-            title = latest.get("title") if isinstance(latest, dict) else getattr(latest, "title", None)
-            
+            title = (
+                latest.get("title") if isinstance(latest, dict) else getattr(latest, "title", None)
+            )
+
             if not link or not title:
                 logger.debug(f"@{username}: Missing link or title in RSS entry")
                 return None
-            
+
             tweet_id = self.generate_tweet_id(latest)
 
             # Skip if already seen
@@ -283,7 +291,11 @@ class XMonitor:
 
             logger.info(f"@{username}: New tweet detected (score: {opportunity_score})")
 
-            published = latest.get("published") if isinstance(latest, dict) else getattr(latest, "published", "Unknown")
+            published = (
+                latest.get("published")
+                if isinstance(latest, dict)
+                else getattr(latest, "published", "Unknown")
+            )
 
             return {
                 "username": username,
@@ -329,18 +341,18 @@ class XMonitor:
         # V2: Cleaner alert - removed misleading score & broken tweet link
         message = f"""{emoji} *NEW TWEET ALERT*
 
-*@{tweet['username']}*
+*@{tweet["username"]}*
 
 📝 {title}
 
 🔗 [Profile]({profile_url}) - check latest tweets
 ⏰ *Reply NOW for maximum visibility!*
 """
-        
+
         # Add AI reply suggestions if enabled
         if config.enable_ai_replies and config.groq_api_key:
             try:
-                replies = get_reply_suggestions(title, tweet['username'], 5)
+                replies = get_reply_suggestions(title, tweet["username"], 5)
                 if replies:
                     message += "\n━━━━━━━━━━━━━━━━━━━━━━━━\n"
                     message += "💡 *REPLY IDEAS:*\n\n"
@@ -348,7 +360,9 @@ class XMonitor:
                         message += f"*{i}.* {reply}\n\n"
                     message += "_Pick one, customize, post!_ 🚀"
                 else:
-                    logger.warning("AI replies enabled but no suggestions were returned; falling back to static tips.")
+                    logger.warning(
+                        "AI replies enabled but no suggestions were returned; falling back to static tips."
+                    )
                     message += """
 _Why reply now:_
 • Replies are 13.5x more valuable than likes
@@ -415,7 +429,6 @@ Ready to catch opportunities! 🎯"""
                             tweet["opportunity_score"] >= config.min_opportunity_score
                             and tweet["age_minutes"] <= config.max_tweet_age_minutes
                         ):
-
                             logger.success(
                                 f"🚨 ALERT: @{username} - Score: {tweet['opportunity_score']}"
                             )

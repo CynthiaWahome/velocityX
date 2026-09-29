@@ -7,8 +7,8 @@ Sets up professional logging with loguru.
 
 import json
 import os
+import sys
 from pathlib import Path
-from typing import List
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -46,7 +46,7 @@ class Config:
         # Console logging with colors
         log_level = os.getenv("LOG_LEVEL", "INFO")
         logger.add(
-            lambda msg: print(msg, end=""),
+            sys.stderr,
             colorize=True,
             format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>",
             level=log_level,
@@ -156,7 +156,7 @@ class Config:
         return int(os.getenv("DEFAULT_TWEET_AGE_MINUTES", "10"))
 
     @property
-    def monitored_accounts(self) -> List[str]:
+    def monitored_accounts(self) -> list[str]:
         """
         Get list of accounts to monitor.
 
@@ -171,11 +171,11 @@ class Config:
         # Otherwise use curated lists
         return self._get_default_accounts()
 
-    def _get_default_accounts(self) -> List[str]:
+    def _get_default_accounts(self) -> list[str]:
         """Get all accounts from accounts.json (or fallback to constants.py)."""
         # Try to load from accounts.json first
         json_path = Path(__file__).parent / "accounts.json"
-        
+
         if json_path.exists():
             try:
                 with open(json_path) as f:
@@ -187,7 +187,7 @@ class Config:
                 return all_accounts
             except Exception as e:
                 logger.warning(f"Failed to load accounts.json: {e}, using fallback")
-        
+
         # Fallback to hardcoded constants
         all_accounts = []
         for category_accounts in DEFAULT_ACCOUNT_CATEGORIES.values():

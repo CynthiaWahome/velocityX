@@ -6,7 +6,6 @@ import sys
 from unittest.mock import Mock, patch
 
 import pytest
-import os
 
 import main
 
@@ -40,7 +39,7 @@ class TestCLI:
                 main.parse_args()
             assert exc_info.value.code == 0
 
-    @patch("main.XMonitor")
+    @patch("main.VelocityXEngine")
     @patch("main.config")
     def test_run_single_cycle_success(self, mock_config, mock_monitor_class):
         """Test successful single cycle run."""
@@ -60,7 +59,7 @@ class TestCLI:
         assert result == 0
         assert mock_monitor.check_account.call_count == 2
 
-    @patch("main.XMonitor")
+    @patch("main.VelocityXEngine")
     @patch("main.config")
     def test_run_single_cycle_with_alert(self, mock_config, mock_monitor_class):
         """Test single cycle with alert sent."""
@@ -88,7 +87,7 @@ class TestCLI:
         assert result == 0
         mock_monitor.send_telegram_alert.assert_called_once()
 
-    @patch("main.XMonitor")
+    @patch("main.VelocityXEngine")
     @patch("main.config")
     def test_run_single_cycle_below_threshold(self, mock_config, mock_monitor_class):
         """Test single cycle with tweet below threshold."""
@@ -115,7 +114,7 @@ class TestCLI:
         # Should not send alert
         mock_monitor.send_telegram_alert.assert_not_called()
 
-    @patch("main.XMonitor")
+    @patch("main.VelocityXEngine")
     def test_run_single_cycle_error(self, mock_monitor_class):
         """Test single cycle with error."""
         mock_monitor_class.side_effect = Exception("Test error")
@@ -124,7 +123,7 @@ class TestCLI:
 
         assert result == 1
 
-    @patch("main.XMonitor")
+    @patch("main.VelocityXEngine")
     def test_run_continuous_keyboard_interrupt(self, mock_monitor_class):
         """Test continuous mode with keyboard interrupt."""
         mock_monitor = Mock()
@@ -135,7 +134,7 @@ class TestCLI:
 
         assert result == 0
 
-    @patch("main.XMonitor")
+    @patch("main.VelocityXEngine")
     def test_run_continuous_error(self, mock_monitor_class):
         """Test continuous mode with error."""
         mock_monitor = Mock()
