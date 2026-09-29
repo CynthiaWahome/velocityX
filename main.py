@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-X Monitor Bot - Main Entry Point
+VelocityX Engine - Main Entry Point
 
 Monitor high-signal X/Twitter accounts and get instant alerts
 for reply opportunities via Telegram.
@@ -50,7 +50,7 @@ For more info, see README.md
     parser.add_argument(
         "--version",
         action="version",
-        version="VelocityX v0.1.0",
+        version="VelocityX v0.2.0",
     )
 
     return parser.parse_args()

@@ -212,9 +212,3 @@ data/*.db
 data/*.db-journal
 *.sqlite
 *.sqlite3
-
-# Scratch notes & diagnostic logs
-pr_*.md
-refactoring_notes.md
-server_logs*.txt
-telegram_messages.md

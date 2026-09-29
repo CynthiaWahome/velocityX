@@ -10,8 +10,7 @@
 
 > **High-throughput ingestion pipeline and low-latency contextual reasoning engine engineered to detect early publications and assist human-in-the-loop engagement aligned with modern recommendation systems ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
 
-🌐 **Web Showcase & Architecture:** [velocityx.wamzii.com](https://velocityx.wamzii.com)  
-📂 **Frontend Repository:** [github.com/CynthiaWahome/velocityx-landing](https://github.com/CynthiaWahome/velocityx-landing)
+🌐 **Landing:** [velocityx.wamzii.com](https://velocityx.wamzii.com)
 
 ---
 
@@ -55,7 +54,7 @@ flowchart TD
         I -->|Age ≥ 30m| M["Score: ≤ 40 (Low Signal)"]
     end
 
-    subgraph Reasoning ["4. Sub-850ms Reasoning & Dispatch"]
+    subgraph Reasoning ["4. Accelerated Reasoning & Dispatch"]
         J & K --> N{"Score ≥ Min Threshold?"}
         N -->|Yes| O["Groq LPU Engine<br/>LLaMA 3.3 70B Versatile"]
         O --> P["Synthesize 5 Algorithmic Angles<br/>(Counter-intuitive, Socratic, Technical)"]
@@ -73,8 +72,8 @@ flowchart TD
 * **The Tradeoff:** RSS feeds have an inherent 5–15 minute indexing delay and omit real-time engagement sequence data at $t=0$. VelocityX evaluates candidates using a configurable estimated baseline age (`DEFAULT_TWEET_AGE_MINUTES=5`), ensuring that newly discovered publications are deduplicated in SQLite before being scored at peak opportunity upon first detection. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
 
 ### 2. Reasoning: Low-Latency Inference via Groq LPUs
-* In competitive conversational threads, standard cloud LLM latencies (3–7 seconds) consume valuable human reaction time.
-* VelocityX leverages **Groq LPUs running LLaMA 3.3 70B Versatile** (~300 tokens/sec), generating five structured conversational vectors (Socratic inquiries, technical extensions, contrarian insights) with sub-second generation times.
+* In competitive conversational threads, standard cloud LLM API calls (often 3–7 seconds) consume valuable human reaction time during the sequence injection window.
+* VelocityX leverages **Groq LPUs running LLaMA 3.3 70B Versatile** (delivering hardware-accelerated throughput rated at ~300 tokens/sec), generating five structured conversational vectors (Socratic inquiries, technical extensions, contrarian insights) with minimal round-trip latency.
 
 ### 3. State & Idempotency: Atomic SQLite Ledger
 * Runs a persistent SQLite ledger with Write-Ahead Logging (`WAL` mode).
@@ -114,7 +113,7 @@ velocityx/
 * Python 3.11+
 * [uv](https://github.com/astral-sh/uv) (Extremely fast Python package installer and resolver)
 * Telegram Bot Token & Chat ID
-* Groq API Key (Optional, for sub-850ms draft generation)
+* Groq API Key (Optional, enables hardware-accelerated draft generation)
 
 ### Installation
 
@@ -148,6 +147,24 @@ Runs continuously with jittered intervals and persistent deduplication:
 ```bash
 uv run python main.py
 ```
+
+---
+
+## 🎯 Customizing for Your Niche
+
+VelocityX was engineered around a personal target set of AI researchers and distributed systems practitioners, but its pipeline is completely domain-agnostic. When cloning this repository for your own brand, industry, or technical focus, adjust these three files:
+
+1. **[`velocityx/accounts.json`](velocityx/accounts.json) (Target Accounts):**
+   - Populate your industry's thought leaders, founders, and key accounts categorized by topic (e.g., `web3`, `fintech`, `design`, `biotech`).
+   - The engine automatically aggregates all non-empty categories into its active monitoring rotation.
+
+2. **[`velocityx/constants.py`](velocityx/constants.py) (Scoring Multipliers & Fallbacks):**
+   - Contains fallback categories (`DEFAULT_ACCOUNT_CATEGORIES`), alert emoji thresholds, recency boost factors (`RECENCY_BOOSTS`), and recommendation algorithm engagement weights.
+   - Adjust `RECENCY_BOOSTS` or `CONVERSATION_THRESHOLD` if your niche operates on longer publication cycles or different engagement rhythms.
+
+3. **[`velocityx/prompt.txt`](velocityx/prompt.txt) (Persona & Reply Tone):**
+   - Shapes how Groq generates reply recommendations.
+   - Customize personality guidelines, constraints (e.g., maximum length, formatting rules), and reasoning angles to reflect your personal voice or company brand.
 
 ---
 
