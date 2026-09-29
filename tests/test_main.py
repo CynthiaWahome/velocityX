@@ -6,7 +6,6 @@ import sys
 from unittest.mock import Mock, patch
 
 import pytest
-import os
 
 import main
 

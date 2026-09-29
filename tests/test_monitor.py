@@ -143,9 +143,7 @@ class TestXMonitor:
 
     @patch("requests.Session.get")
     @patch("x_monitor_bot.monitor.feedparser")
-    def test_check_account_no_tweets(
-        self, mock_get, mock_feedparser, monitor, mock_db
-    ):
+    def test_check_account_no_tweets(self, mock_get, mock_feedparser, monitor, mock_db):
         """Test checking account with no recent tweets."""
         mock_get.return_value = Mock(status_code=200, content=b"")
         mock_feedparser.parse.return_value = Mock(entries=[])
@@ -162,13 +160,13 @@ class TestXMonitor:
             "published": "2024-01-01",
         }
         mock_feedparser.parse.return_value = Mock(entries=[mock_entry])
-        mock_db.is_seen.return_value = True # Explicitly set for this test
+        mock_db.is_seen.return_value = True  # Explicitly set for this test
 
         result = monitor.check_account("sama")
         assert result is None
 
     @patch("x_monitor_bot.monitor.feedparser")
-    @patch("requests.Session.get") # Patch requests.Session.get
+    @patch("requests.Session.get")  # Patch requests.Session.get
     def test_check_account_new_tweet(self, mock_get, mock_feedparser, monitor, mock_db):
         """Test checking account with new tweet."""
         # Configure mock_get for successful response

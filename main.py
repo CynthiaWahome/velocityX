@@ -15,6 +15,7 @@ import sys
 import time
 
 from loguru import logger
+
 from x_monitor_bot.config import config
 from x_monitor_bot.monitor import XMonitor
 
@@ -82,7 +83,6 @@ def run_single_cycle():
                     tweet["opportunity_score"] >= config.min_opportunity_score
                     and tweet["age_minutes"] <= config.max_tweet_age_minutes
                 ):
-
                     logger.success(f"🚨 ALERT: @{username} - Score: {tweet['opportunity_score']}")
 
                     # Send alert
