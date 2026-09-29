@@ -206,9 +206,15 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# X Monitor Bot specific
+# VelocityX specific
 logs/
 data/*.db
 data/*.db-journal
 *.sqlite
 *.sqlite3
+
+# Scratch notes & diagnostic logs
+pr_*.md
+refactoring_notes.md
+server_logs*.txt
+telegram_messages.md

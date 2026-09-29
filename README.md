@@ -1,14 +1,17 @@
 # VelocityX • Early Signal & Reply Intelligence Engine
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat&logo=python&logoColor=white)
-![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)
-![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
-![Groq](https://img.shields.io/badge/Groq-LLaMA--3.3--70B-F55036.svg)
-![SQLite](https://img.shields.io/badge/SQLite-Idempotent%20Ledger-003B57.svg?logo=sqlite&logoColor=white)
-![Telegram](https://img.shields.io/badge/Telegram-Dispatch%20Alerts-26A5E4.svg?logo=telegram&logoColor=white)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![uv](https://img.shields.io/badge/uv-Fast_Python-DE5FE9?style=for-the-badge&logo=astral&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036?style=for-the-badge&logo=groq&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-Idempotent_Ledger-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Telegram](https://img.shields.io/badge/Telegram-Dispatch_Alerts-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)
+![Ruff](https://img.shields.io/badge/Ruff-Linter_%26_Formatter-D7FF64?style=for-the-badge&logo=ruff&logoColor=black)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
 
 > **High-throughput ingestion pipeline and low-latency contextual reasoning engine engineered to detect early publications and assist human-in-the-loop engagement aligned with modern recommendation systems ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
+
+🌐 **Web Showcase & Architecture:** [velocityx.wamzii.com](https://velocityx.wamzii.com)  
+📂 **Frontend Repository:** [github.com/CynthiaWahome/velocityx-landing](https://github.com/CynthiaWahome/velocityx-landing)
 
 ---
 
@@ -98,7 +101,6 @@ velocityx/
 │   ├── test_main.py
 │   └── test_monitor.py
 ├── accounts.json                # Curated target account configurations
-├── debug_rss.py                 # Diagnostic script for proxy validation
 ├── main.py                      # CLI entrypoint with single-run & continuous modes
 ├── pyproject.toml               # Modern uv/hatchling package manifest
 └── README.md
