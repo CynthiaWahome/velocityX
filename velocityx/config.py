@@ -1,5 +1,5 @@
 """
-Configuration management for X Monitor Bot.
+Configuration management for VelocityX Engine.
 
 Loads settings from .env file and provides validation.
 Sets up professional logging with loguru.

@@ -206,7 +206,7 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# X Monitor Bot specific
+# VelocityX specific
 logs/
 data/*.db
 data/*.db-journal

@@ -1,11 +1,11 @@
 """
-X/Twitter Monitor Bot - Main Monitoring Logic.
+VelocityX Engine - Algorithmic Early Signal & Reply Intelligence.
 
 Monitors high-signal X/Twitter accounts via Google News RSS feeds.
-Calculates opportunity scores based on X's open-source algorithm.
-Sends Telegram alerts for high-value reply opportunities.
+Calculates opportunity scores based on X's open-source recommendation algorithm.
+Synthesizes contextual replies via Groq LPU and dispatches Telegram alerts.
 
-This script does NOT interact with X/Twitter directly - it only reads
+This engine does NOT interact with X/Twitter directly - it only reads
 public Google News RSS feeds. Your X account cannot be detected or banned.
 """
 
@@ -388,7 +388,7 @@ _Why reply now:_
         """Main monitoring loop."""
 
         logger.info("=" * 60)
-        logger.info("🚀 X MONITOR BOT STARTED")
+        logger.info("🚀 VELOCITYX ENGINE STARTED")
         logger.info("=" * 60)
         logger.info(f"📡 Monitoring {len(config.monitored_accounts)} accounts")
         logger.info(f"⏱️  Checking every {config.check_interval_seconds} seconds")
@@ -398,12 +398,12 @@ _Why reply now:_
         logger.info("=" * 60)
 
         # Send startup notification
-        startup_msg = f"""✅ *X Monitor Bot Started*
+        startup_msg = f"""🚀 *VelocityX Engine Started*
 
 Monitoring {len(config.monitored_accounts)} accounts
 Checking every {config.check_interval_seconds // 60} minutes
 
-Ready to catch opportunities! 🎯"""
+Ready to catch high-signal opportunities! 🎯"""
 
         self.send_telegram_alert(startup_msg)
 
@@ -465,7 +465,7 @@ Ready to catch opportunities! 🎯"""
 
             except KeyboardInterrupt:
                 logger.info("\n\n👋 Shutting down gracefully...")
-                shutdown_msg = "❌ *X Monitor Bot Stopped*\n\nMonitoring paused."
+                shutdown_msg = "🛑 *VelocityX Engine Stopped*\n\nMonitoring paused."
                 self.send_telegram_alert(shutdown_msg)
                 break
 

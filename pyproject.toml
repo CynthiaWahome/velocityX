@@ -1,6 +1,6 @@
 [project]
 name = "velocityx"
-version = "0.1.0"
+version = "0.2.0"
 description = "Algorithmic Early Signal & Reply Intelligence Engine for X (Twitter)"
 authors = [
     { name = "Cynthia Wahome", email = "hey@wamzii.com" }
