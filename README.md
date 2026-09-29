@@ -8,18 +8,20 @@
 ![Telegram](https://img.shields.io/badge/Telegram-Dispatch%20Alerts-26A5E4.svg?logo=telegram&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-> **High-throughput ingestion pipeline and sub-850ms contextual reasoning engine designed to capture the 10-minute algorithmic boost window on X (Twitter).**
+> **High-throughput ingestion pipeline and sub-850ms contextual reasoning engine designed to intercept early signal and exploit the feed injection window defined by the modern X recommendation architecture ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
 
 ---
 
 ## ⚡ Executive Summary & Engineering Rationale
 
-In April 2023, Twitter open-sourced its recommendation core ([`twitter/the-algorithm`](https://github.com/twitter/the-algorithm)). Analysis of the heavy-ranker scoring models revealed a fundamental property of the platform's graph:
+The 2026 release of X's recommendation engine ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)) represents a fundamental architectural departure from legacy social ranking systems:
 
-* **Early Velocity Multiplier:** A reply posted within the first 10 minutes of a seed tweet that elicits an author response receives between a **13.5x and 75x distribution multiplier** across candidate generation clusters (SimClusters and TwHIN embeddings).
-* **The Decay Curve:** Once a tweet passes 15 minutes of unengaged latency, decay factors accelerate exponentially, diminishing discovery gains.
+1. **62.9% Rust Core:** Completely rewritten in Rust and Python, discarding the legacy Scala codebase (`home-mixer`, `cr-mixer`) for a unified, high-performance inference pipeline shipping with pre-trained model artifacts.
+2. **End-to-End Sequence Learning:** Hand-engineered heuristic feature formulas have been eliminated. Relevance is learned dynamically from continuous user engagement sequences and deep interaction graphs.
+3. **Grok Content Understanding:** Active public release cadences (such as the May 2026 updates) integrated deep semantic content-understanding models directly into candidate generation and sequence blending.
+4. **The Author Reciprocation Signal:** In sequence-to-sequence ranking, an early reply that elicits a direct response from the original author acts as an immediate positive sequence modifier. This reciprocal interaction anchors the conversation in the candidate generation pool before timeline cascades lock in.
 
-**VelocityX** is an autonomous daemon built to exploit this algorithmic window. It tracks high-signal target accounts, intercepts new publications within seconds, scores opportunity potential, synthesizes contextual replies via low-latency LLMs, and dispatches actionable alerts directly to Telegram before candidate generation pools freeze.
+**VelocityX** is an autonomous daemon built to capture this operational window. It tracks high-signal target accounts, intercepts new publications within seconds, scores engagement opportunity, synthesizes contextual replies via low-latency LLMs, and dispatches actionable alerts directly to Telegram before candidate generation pools freeze.
 
 ---
 
@@ -42,12 +44,12 @@ flowchart TD
         F -->|New Publication| H["Compute Ingestion Latency"]
     end
 
-    subgraph Scoring ["3. Velocity Window Scoring"]
-        H --> I{"Age Threshold & Decay<br/>Δt = now - published_at"}
-        I -->|Δt < 10m| J["Score: 100 (Critical)"]
-        I -->|10m ≤ Δt < 15m| K["Score: 85 (High)"]
-        I -->|15m ≤ Δt < 30m| L["Score: 60 (Medium)"]
-        I -->|Δt ≥ 30m| M["Score: ≤ 40 (Low)"]
+    subgraph Scoring ["3. Sequence Window Scoring"]
+        H --> I{"Sequence Injection Gate<br/>Δt = now - published_at"}
+        I -->|Δt < 10m| J["Score: 100 (Critical Opportunity)"]
+        I -->|10m ≤ Δt < 15m| K["Score: 85 (High Opportunity)"]
+        I -->|15m ≤ Δt < 30m| L["Score: 60 (Decaying Opportunity)"]
+        I -->|Δt ≥ 30m| M["Score: ≤ 40 (Low Signal)"]
     end
 
     subgraph Reasoning ["4. Sub-850ms Reasoning & Dispatch"]
@@ -65,10 +67,10 @@ flowchart TD
 ### 1. Ingestion: RSS Timestamp Delta vs. Raw DOM Scraping
 * **The Problem:** Direct headless browser scraping (Playwright/Puppeteer) against `x.com` triggers aggressive Cloudflare CAPTCHAs, requires residential proxy rotations, consumes excessive memory (>1.5 GB RAM), and risks immediate IP bans. Official Enterprise API access costs upwards of $5,000/month.
 * **The Solution:** VelocityX routes target account queries through Google News syndicated RSS proxies (`news.google.com/rss/search?q=site:x.com/{username}`). 
-* **The Tradeoff:** RSS feeds lack real-time retweet and like counts at $t=0$. VelocityX treats **ingestion latency ($\Delta t$) as a pure proxy for velocity potential**. If a post is detected under 10 minutes from publication, its algorithmic multiplier is mathematically maximized. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
+* **The Tradeoff:** RSS feeds lack real-time engagement sequence data at $t=0$. VelocityX treats **ingestion latency ($\Delta t$) as a pure proxy for sequence injection potential**. Detecting a post within 10 minutes maximizes the chance of author reciprocation before candidate pools freeze. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
 
 ### 2. Reasoning: Sub-850ms Inference via Groq LPU
-* In the 10-minute feed injection window, standard LLM inference latencies (3–7 seconds on typical cloud APIs) consume valuable human reaction time.
+* In a sequence-based candidate generation window, standard LLM inference latencies (3–7 seconds on typical cloud APIs) consume valuable human reaction time.
 * VelocityX integrates **Groq LPUs running LLaMA 3.3 70B Versatile**, streaming back five structured conversational vectors (Socratic questions, technical extensions, contrarian takes) in **under 850 milliseconds**.
 
 ### 3. State & Idempotency: Atomic SQLite Ledger
@@ -86,9 +88,9 @@ velocityx/
 │   ├── __init__.py
 │   ├── ai_replies.py            # Groq LLaMA 3.3 70B prompt synthesis
 │   ├── config.py                # Pydantic-style env validation & target loader
-│   ├── constants.py             # Algorithmic multipliers & fallback targets
+│   ├── constants.py             # Algorithmic targets & timing thresholds
 │   ├── database.py              # SQLite WAL deduplication ledger
-│   └── monitor.py               # Ingestion loop, scoring math & dispatch
+│   └── monitor.py               # Ingestion loop, scoring & dispatch
 ├── tests/                       # Complete test suite (61 tests, 100% pass)
 │   ├── test_ai_replies.py
 │   ├── test_config.py
