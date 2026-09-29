@@ -1,6 +1,7 @@
 # VelocityX • Early Signal & Reply Intelligence Engine
 
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![CI](https://img.shields.io/github/actions/workflow/status/CynthiaWahome/velocityx/ci.yml?branch=dev&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)
 ![uv](https://img.shields.io/badge/uv-Fast_Python-DE5FE9?style=for-the-badge&logo=astral&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036?style=for-the-badge&logo=groq&logoColor=white)
 ![SQLite](https://img.shields.io/badge/SQLite-Idempotent_Ledger-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
