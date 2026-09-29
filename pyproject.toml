@@ -1,14 +1,14 @@
 [project]
 name = "velocityx"
 version = "0.1.0"
-description = "Algorithmic Early Signal & Feed Injection Engine for X (Twitter)"
+description = "Algorithmic Early Signal & Reply Intelligence Engine for X (Twitter)"
 authors = [
     { name = "Cynthia Wahome", email = "hey@wamzii.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-keywords = ["twitter", "x", "algorithm", "feed-injection", "early-signal", "velocity", "groq", "llama-3", "telegram", "rss"]
+keywords = ["twitter", "x", "algorithm", "reply-intelligence", "early-signal", "velocity", "groq", "llama-3", "telegram", "rss"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -69,8 +69,8 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=x_monitor_bot --cov-report=term-missing"
+addopts = "-v --cov=velocityx --cov-report=term-missing"
 
 [tool.hatch.build.targets.wheel]
-force-include = { "x_monitor_bot" = "x_monitor_bot" }
+force-include = { "velocityx" = "velocityx" }
 

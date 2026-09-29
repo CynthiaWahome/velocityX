@@ -6,16 +6,16 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from x_monitor_bot.monitor import XMonitor
+from velocityx.monitor import VelocityXEngine
 
 
-class TestXMonitor:
+class TestVelocityXEngine:
     """Test monitoring functionality."""
 
     @pytest.fixture
     def mock_config(self):
         """Mock configuration."""
-        with patch("x_monitor_bot.monitor.config") as mock_cfg:
+        with patch("velocityx.monitor.config") as mock_cfg:
             mock_cfg.telegram_bot_token = "test_token"
             mock_cfg.telegram_chat_id = "123456"
             mock_cfg.monitored_accounts = ["sama", "karpathy"]
@@ -35,7 +35,7 @@ class TestXMonitor:
     @pytest.fixture
     def mock_db(self):
         """Mock database."""
-        with patch("x_monitor_bot.monitor.SeenTweetsDB") as mock_db_class:
+        with patch("velocityx.monitor.SeenTweetsDB") as mock_db_class:
             mock_db = Mock()
             mock_db.is_seen.return_value = False
             mock_db.mark_seen.return_value = None
@@ -46,8 +46,8 @@ class TestXMonitor:
     @pytest.fixture
     def monitor(self, mock_config, mock_db):
         """Create monitor instance with mocked dependencies."""
-        with patch("x_monitor_bot.monitor.XMonitor.send_telegram_alert"):
-            return XMonitor()
+        with patch("velocityx.monitor.VelocityXEngine.send_telegram_alert"):
+            return VelocityXEngine()
 
     def test_monitor_initialization(self, monitor):
         """Test that monitor initializes correctly."""
@@ -124,7 +124,7 @@ class TestXMonitor:
         message = monitor.format_alert_message(tweet)
         assert "🔥🔥🔥" in message  # Critical emoji
 
-    @patch("x_monitor_bot.monitor.get_reply_suggestions", return_value=[])
+    @patch("velocityx.monitor.get_reply_suggestions", return_value=[])
     def test_format_alert_message_truncates_long_title(self, mock_get_reply_suggestions, monitor):
         """Test that long titles are truncated."""
         long_title = "A" * 250
@@ -142,7 +142,7 @@ class TestXMonitor:
         assert len(message) < len(long_title) + 500
 
     @patch("requests.Session.get")
-    @patch("x_monitor_bot.monitor.feedparser")
+    @patch("velocityx.monitor.feedparser")
     def test_check_account_no_tweets(self, mock_get, mock_feedparser, monitor, mock_db):
         """Test checking account with no recent tweets."""
         mock_get.return_value = Mock(status_code=200, content=b"")
@@ -151,7 +151,7 @@ class TestXMonitor:
         result = monitor.check_account("sama")
         assert result is None
 
-    @patch("x_monitor_bot.monitor.feedparser")
+    @patch("velocityx.monitor.feedparser")
     def test_check_account_already_seen(self, mock_feedparser, monitor, mock_db):
         """Test checking account with already seen tweet."""
         mock_entry = {
@@ -165,7 +165,7 @@ class TestXMonitor:
         result = monitor.check_account("sama")
         assert result is None
 
-    @patch("x_monitor_bot.monitor.feedparser")
+    @patch("velocityx.monitor.feedparser")
     @patch("requests.Session.get")  # Patch requests.Session.get
     def test_check_account_new_tweet(self, mock_get, mock_feedparser, monitor, mock_db):
         """Test checking account with new tweet."""
@@ -189,7 +189,7 @@ class TestXMonitor:
         assert result["opportunity_score"] > 0
         mock_db.mark_seen.assert_called_once()
 
-    @patch("x_monitor_bot.monitor.requests.Session.post")
+    @patch("velocityx.monitor.requests.Session.post")
     def test_send_telegram_alert_success(self, mock_post, monitor):
         """Test successful Telegram alert."""
         mock_response = Mock()
@@ -200,7 +200,7 @@ class TestXMonitor:
         assert result is True
         mock_post.assert_called_once()
 
-    @patch("x_monitor_bot.monitor.requests.Session.post")
+    @patch("velocityx.monitor.requests.Session.post")
     def test_send_telegram_alert_failure(self, mock_post, monitor):
         """Test failed Telegram alert."""
         mock_response = Mock()
@@ -211,7 +211,7 @@ class TestXMonitor:
         result = monitor.send_telegram_alert("Test message")
         assert result is False
 
-    @patch("x_monitor_bot.monitor.requests.Session.post")
+    @patch("velocityx.monitor.requests.Session.post")
     def test_send_telegram_alert_exception(self, mock_post, monitor):
         """Test Telegram alert with exception."""
         mock_post.side_effect = Exception("Network error")

@@ -26,8 +26,8 @@ from .constants import ALERT_EMOJIS
 from .database import SeenTweetsDB
 
 
-class XMonitor:
-    """Main monitoring class for X/Twitter accounts."""
+class VelocityXEngine:
+    """Main monitoring and reply intelligence engine for X/Twitter accounts."""
 
     # Pool of User-Agent strings to rotate through (helps avoid detection)
     USER_AGENTS = [
@@ -64,7 +64,7 @@ class XMonitor:
         # Also configure feedparser's User-Agent as backup
         feedparser.USER_AGENT = random.choice(self.USER_AGENTS)
 
-        logger.info("X Monitor Bot initialized")
+        logger.info("VelocityX Engine initialized")
         logger.info(f"Monitoring {len(config.monitored_accounts)} accounts")
 
     def _rotate_user_agent(self):

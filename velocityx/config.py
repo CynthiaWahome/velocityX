@@ -7,6 +7,7 @@ Sets up professional logging with loguru.
 
 import json
 import os
+import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -45,7 +46,7 @@ class Config:
         # Console logging with colors
         log_level = os.getenv("LOG_LEVEL", "INFO")
         logger.add(
-            lambda msg: print(msg, end=""),
+            sys.stderr,
             colorize=True,
             format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <level>{message}</level>",
             level=log_level,
