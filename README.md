@@ -45,11 +45,11 @@ flowchart TD
     end
 
     subgraph Scoring ["3. Sequence Window Scoring"]
-        H --> I{"Sequence Injection Gate<br/>Δt = now - published_at"}
-        I -->|Δt < 10m| J["Score: 100 (Critical Opportunity)"]
-        I -->|10m ≤ Δt < 15m| K["Score: 85 (High Opportunity)"]
-        I -->|15m ≤ Δt < 30m| L["Score: 60 (Decaying Opportunity)"]
-        I -->|Δt ≥ 30m| M["Score: ≤ 40 (Low Signal)"]
+        H --> I{"Sequence Injection Gate<br/>Estimated Age: DEFAULT_TWEET_AGE"}
+        I -->|Age < 10m| J["Score: 100 (Critical Opportunity)"]
+        I -->|10m ≤ Age < 15m| K["Score: 85 (High Opportunity)"]
+        I -->|15m ≤ Age < 30m| L["Score: 60 (Decaying Opportunity)"]
+        I -->|Age ≥ 30m| M["Score: ≤ 40 (Low Signal)"]
     end
 
     subgraph Reasoning ["4. Sub-850ms Reasoning & Dispatch"]
@@ -64,10 +64,10 @@ flowchart TD
 
 ## 🛠️ Architectural Tradeoffs & Design Decisions
 
-### 1. Ingestion: RSS Timestamp Delta vs. Raw DOM Scraping
+### 1. Ingestion: RSS Proxying & Age Estimation vs. Raw DOM Scraping
 * **The Problem:** Direct headless browser scraping (Playwright/Puppeteer) against `x.com` triggers aggressive Cloudflare CAPTCHAs, requires residential proxy rotations, consumes excessive memory (>1.5 GB RAM), and risks immediate IP bans. Official Enterprise API access costs upwards of $5,000/month.
 * **The Solution:** VelocityX routes target account queries through Google News syndicated RSS proxies (`news.google.com/rss/search?q=site:x.com/{username}`). 
-* **The Tradeoff:** RSS feeds lack real-time engagement sequence data at $t=0$. VelocityX treats **ingestion latency ($\Delta t$) as a pure proxy for sequence injection potential**. Detecting a post within 10 minutes maximizes the chance of author reciprocation before candidate pools freeze. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
+* **The Tradeoff:** RSS feeds have an inherent 5–15 minute indexing delay and omit real-time engagement sequence data at $t=0$. VelocityX evaluates candidates using a configurable estimated baseline age (`DEFAULT_TWEET_AGE_MINUTES=5`), ensuring that newly discovered publications are scored at peak opportunity upon first detection before deduplicating them in SQLite. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
 
 ### 2. Reasoning: Sub-850ms Inference via Groq LPU
 * In a sequence-based candidate generation window, standard LLM inference latencies (3–7 seconds on typical cloud APIs) consume valuable human reaction time.
@@ -142,7 +142,7 @@ GROQ_API_KEY=gsk_your_groq_api_key_here
 ENABLE_AI_REPLIES=true
 
 # Engine Tuning
-CHECK_INTERVAL_MINUTES=5
+CHECK_INTERVAL_SECONDS=300
 MIN_OPPORTUNITY_SCORE=70
 MAX_TWEET_AGE_MINUTES=15
 DELAY_BETWEEN_ACCOUNTS=1.5
@@ -156,7 +156,7 @@ DELAY_BETWEEN_ACCOUNTS=1.5
 Runs a single scan across all configured target accounts, logs scoring outputs, and exits cleanly:
 
 ```bash
-uv run python main.py --once
+uv run python main.py --single-run
 ```
 
 ### 2. Continuous Production Daemon
