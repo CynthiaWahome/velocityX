@@ -8,7 +8,7 @@
 ![Telegram](https://img.shields.io/badge/Telegram-Dispatch%20Alerts-26A5E4.svg?logo=telegram&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-> **High-throughput ingestion pipeline and sub-850ms contextual reasoning engine engineered to detect early publications and assist human-in-the-loop engagement aligned with modern recommendation systems ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
+> **High-throughput ingestion pipeline and low-latency contextual reasoning engine engineered to detect early publications and assist human-in-the-loop engagement aligned with modern recommendation systems ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)).**
 
 ---
 
@@ -17,11 +17,11 @@
 The 2026 release of X's recommendation engine ([`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm)) represents a fundamental architectural shift from legacy social ranking heuristics:
 
 1. **62.9% Rust Core:** Completely rewritten in Rust and Python, replacing the legacy Scala codebase with high-performance inference pipelines and pre-trained model artifacts.
-2. **Sequence-to-Sequence Learning:** Hand-engineered feature weights have been replaced by sequence models learning relevance directly from user engagement sequences.
-3. **Grok Content Understanding:** Modern releases integrate deep semantic content-understanding models directly into candidate generation.
-4. **The Author Reciprocation Factor:** In sequence engagement models, an early reply that triggers a direct response from the original author acts as an immediate positive signal, building conversational depth.
+2. **Probability-Based Ranking:** The Rust-based `phoenix` recommendation service predicts per-action engagement probabilities, while `RankingScorer` applies configured action weights to prioritize high-affinity content.
+3. **Multimodal Content Understanding:** Upstream content understanding (`grox`) processes semantic post features ahead of candidate retrieval.
+4. **Bidirectional Follow Signal:** Upstream architecture documentation (`docs/BIDIRECTIONAL_BOOST_CHANGE.md`) documents that original posts authored by mutually followed accounts receive significant scoring boosts, highlighting the value of genuine author engagement.
 
-**VelocityX** is an autonomous assistant built to support this human workflow. It tracks curated target accounts, detects new publications with zero-ban RSS proxies, evaluates early signal opportunity, synthesizes contextual replies via sub-850ms Groq LLaMA 3.3 70B inference, and pushes actionable drafts to Telegram for human review and manual posting.
+**VelocityX** is an autonomous assistant built to support this human workflow. It tracks curated target accounts, detects new publications with zero-ban RSS proxies, evaluates early signal opportunity, synthesizes contextual replies via high-throughput Groq LLaMA 3.3 70B inference, and pushes actionable drafts to Telegram for human review and manual posting.
 
 ---
 
@@ -67,11 +67,11 @@ flowchart TD
 ### 1. Ingestion: RSS Proxying & Age Estimation vs. Raw DOM Scraping
 * **The Problem:** Direct headless browser scraping (Playwright/Puppeteer) against `x.com` triggers aggressive Cloudflare CAPTCHAs, requires residential proxy rotations, consumes excessive memory (>1.5 GB RAM), and risks immediate IP bans. Official Enterprise API access costs upwards of $5,000/month.
 * **The Solution:** VelocityX routes target account queries through Google News syndicated RSS proxies (`news.google.com/rss/search?q=site:x.com/{username}`). 
-* **The Tradeoff:** RSS feeds have an inherent 5–15 minute indexing delay and omit real-time engagement sequence data at $t=0$. VelocityX evaluates candidates using a configurable estimated baseline age (`DEFAULT_TWEET_AGE_MINUTES=5`), ensuring that newly discovered publications are scored at peak opportunity upon first detection before deduplicating them in SQLite. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
+* **The Tradeoff:** RSS feeds have an inherent 5–15 minute indexing delay and omit real-time engagement sequence data at $t=0$. VelocityX evaluates candidates using a configurable estimated baseline age (`DEFAULT_TWEET_AGE_MINUTES=5`), ensuring that newly discovered publications are deduplicated in SQLite before being scored at peak opportunity upon first detection. This achieves **100% daemon uptime, zero proxy costs, and zero rate-limit bans**.
 
-### 2. Reasoning: Sub-850ms Inference via Groq LPU
-* In a sequence-based candidate generation window, standard LLM inference latencies (3–7 seconds on typical cloud APIs) consume valuable human reaction time.
-* VelocityX integrates **Groq LPUs running LLaMA 3.3 70B Versatile**, streaming back five structured conversational vectors (Socratic questions, technical extensions, contrarian takes) in **under 850 milliseconds**.
+### 2. Reasoning: Low-Latency Inference via Groq LPUs
+* In competitive conversational threads, standard cloud LLM latencies (3–7 seconds) consume valuable human reaction time.
+* VelocityX leverages **Groq LPUs running LLaMA 3.3 70B Versatile** (~300 tokens/sec), generating five structured conversational vectors (Socratic inquiries, technical extensions, contrarian insights) with sub-second generation times.
 
 ### 3. State & Idempotency: Atomic SQLite Ledger
 * Runs a persistent SQLite ledger with Write-Ahead Logging (`WAL` mode).
@@ -84,7 +84,7 @@ flowchart TD
 
 ```
 velocityx/
-├── x_monitor_bot/               # Core engine package
+├── velocityx/                   # Core engine package
 │   ├── __init__.py
 │   ├── ai_replies.py            # Groq LLaMA 3.3 70B prompt synthesis
 │   ├── config.py                # Pydantic-style env validation & target loader

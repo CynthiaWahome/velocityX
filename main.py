@@ -34,7 +34,7 @@ Configuration:
   All settings are in .env file. Copy .env.example to .env and configure:
   - TELEGRAM_BOT_TOKEN: Your Telegram bot token
   - TELEGRAM_CHAT_ID: Your Telegram chat ID
-  - MIN_OPPORTUNITY_SCORE: Minimum score for alerts (default: 70)
+  - MIN_OPPORTUNITY_SCORE: Minimum score for alerts (default: 30)
   - CHECK_INTERVAL_SECONDS: How often to check (default: 300)
 
 For more info, see README.md
