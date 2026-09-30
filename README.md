@@ -120,16 +120,30 @@ velocityx/
 
 ```bash
 # Clone the repository
-git clone https://github.com/CynthiaWahome/velocityx.git
-cd velocityx
+git clone https://github.com/CynthiaWahome/velocityX.git
+cd velocityX
 
 # Synchronize dependencies with uv
 uv sync
 
 # Configure runtime credentials
 cp .env.example .env
-# Edit .env with your Telegram bot credentials and optional Groq API key
 ```
+
+#### Setting Up Credentials (2 minutes)
+
+1. **Telegram Bot Token:**
+   - Message [@BotFather](https://t.me/botfather) on Telegram and run `/newbot`.
+   - Name your bot and copy the API token into `TELEGRAM_BOT_TOKEN` in `.env`.
+
+2. **Telegram Chat ID:**
+   - Open a chat with your new bot and click **Start** (or send `/start`).
+   - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` in your browser.
+   - Look for `"chat":{"id":123456789,...}` and copy the numeric ID into `TELEGRAM_CHAT_ID`.
+
+3. **Groq API Key (Optional):**
+   - Grab a free key from the [Groq Console](https://console.groq.com/keys) and set `GROQ_API_KEY`.
+   - Enables hardware-accelerated LLaMA 3.3 reply generation with witty, contextual draft options.
 
 ---
 
