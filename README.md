@@ -147,7 +147,7 @@ cp .env.example .env
 
 3. **Groq API Key (Optional):**
    - Grab a free API key from the [Groq Console](https://console.groq.com/keys) and set `GROQ_API_KEY`.
-   - Enables hardware-accelerated LLaMA 3.3 70B (or `llama-3.1-8b-instant`) reply generation with contextual draft options.
+   - Enables hardware-accelerated reply generation via `GROQ_MODEL_NAME` (defaults to `llama-3.3-70b-versatile`, with support for `llama-3.1-8b-instant` or next-gen models like `openai/gpt-oss-120b`).
 
 ---
 
