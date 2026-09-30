@@ -138,12 +138,16 @@ cp .env.example .env
 
 2. **Telegram Chat ID:**
    - Open a chat with your new bot and click **Start** (or send `/start`).
-   - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` in your browser.
+   - In your terminal, fetch your updates without leaking credentials to browser history:
+     ```bash
+     curl -s "https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates"
+     ```
+     *(Alternatively, open the URL in a private/incognito browser window and close it after).*
    - Look for `"chat":{"id":123456789,...}` and copy the numeric ID into `TELEGRAM_CHAT_ID`.
 
 3. **Groq API Key (Optional):**
-   - Grab a free key from the [Groq Console](https://console.groq.com/keys) and set `GROQ_API_KEY`.
-   - Enables hardware-accelerated LLaMA 3.3 reply generation with witty, contextual draft options.
+   - Grab a free API key from the [Groq Console](https://console.groq.com/keys) and set `GROQ_API_KEY`.
+   - Enables hardware-accelerated LLaMA 3.3 70B (or `llama-3.1-8b-instant`) reply generation with contextual draft options.
 
 ---
 
